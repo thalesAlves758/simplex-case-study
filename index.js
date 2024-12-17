@@ -1,7 +1,43 @@
 import data from './data.json' with { type: 'json' };
 
+import { createArray, copyObject } from "./utils.js";
 import { buildInitialMatrix } from './matrixUtils.js';
 
-const { matrix } = buildInitialMatrix(data);
+const {
+  matrix,
+  artificialVariablesIndexes,
+  coefficientsIndexes,
+  columnLabelIndex,
+  independentTermsColumnIndex,
+  lineLabelIndex,
+  slackVariablesIndexes,
+  zLineIndex
+} = buildInitialMatrix(data);
 
-console.table(matrix);
+const updatedMatrix = getMatrixWithNewZLine({ matrix, zLineIndex, artificialVariablesIndexes, lineLabelIndex, columnLabelIndex });
+
+console.table(updatedMatrix);
+
+function getMatrixWithNewZLine({ matrix, zLineIndex, artificialVariablesIndexes, lineLabelIndex, columnLabelIndex }) {
+  const matrixCopy = copyObject(matrix);
+
+  const newZLine = createArray(matrix[zLineIndex].length);
+
+  newZLine[columnLabelIndex] = "Z'";
+
+  matrix.forEach((matrixLine, index) => {
+    if (index === lineLabelIndex || index === zLineIndex) return;
+
+    matrixLine.forEach((matrixLineItem, lineItemIndex) => {
+      let isArtificialVariable = artificialVariablesIndexes.includes(lineItemIndex);
+
+      if (lineItemIndex === columnLabelIndex || isArtificialVariable) return;
+
+      newZLine[lineItemIndex] -= matrixLineItem;
+    });
+  });
+
+  matrixCopy.push(newZLine);
+
+  return matrixCopy;
+}
