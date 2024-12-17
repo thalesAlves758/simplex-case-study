@@ -23,7 +23,7 @@ function buildInitialMatrix(data) {
     zLine.push(-lucrativity[lucrativityKey]);
   });
 
-  inputConsumptionKeys.forEach((consumptionKey, index, consumptionsList) => {
+  inputConsumptionKeys.forEach((consumptionKey, index) => {
     let coefficientsline = createArray(variablesCount);
 
     Object.keys(inputConsumption[consumptionKey]).forEach(variableConsumptionKey => {
@@ -45,7 +45,7 @@ function buildInitialMatrix(data) {
     independentTerms.push([availability[consumptionKey]]);
   });
 
-  preordersKeys.forEach((preorderKey, index, preordersList) => {
+  preordersKeys.forEach((preorderKey, index) => {
     let coefficientsline = createArray(variablesCount);
     let coefficientsLineIndex = variablesLabels.indexOf(preorderKey);
     coefficientsline[coefficientsLineIndex] = 1;
