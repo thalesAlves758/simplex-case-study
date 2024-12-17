@@ -1,3 +1,4 @@
+import { createArray, createOrderedArray } from "./utils.js";
 
 function buildInitialMatrix(data) {
   const { inputConsumption, availability, lucrativity, preorders } = data;
@@ -88,14 +89,6 @@ function buildInitialMatrix(data) {
     slackVariablesIndexes: createOrderedArray((baseLabel.length + variablesLabels.length), slackVariablesLabels.length),
     artificialVariablesIndexes: createOrderedArray((baseLabel.length + variablesLabels.length + slackVariablesLabels.length), artificialVariablesLabels.length)
   };
-}
-
-function createOrderedArray(startNumber, size, step = 1) {
-  return createArray(size).map((_, index) => startNumber + (index * step));
-}
-
-function createArray(length) {
-  return Array(length).fill(0);
 }
 
 function joinMatrixes(...matrixes) {
