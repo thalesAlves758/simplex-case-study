@@ -1,23 +1,29 @@
 import data from './data.json' with { type: 'json' };
 
-import { createArray, copyObject } from "./utils.js";
+import { createArray, copyObject, renderTable } from "./utils.js";
 import { buildInitialMatrix, getPivotsIndexes, scaleMatrix } from './matrixUtils.js';
 
 const {
   matrix,
   artificialVariablesIndexes,
-  coefficientsIndexes,
   columnLabelIndex,
   independentTermsColumnIndex,
   lineLabelIndex,
-  slackVariablesIndexes,
   zLineIndex
 } = buildInitialMatrix(data);
 
+renderTable(matrix, lineLabelIndex, columnLabelIndex, 'Quadro inicial');
+
 const updatedMatrix = getMatrixWithNewZLine({ matrix, zLineIndex, artificialVariablesIndexes, lineLabelIndex, columnLabelIndex });
+
+renderTable(updatedMatrix, lineLabelIndex, columnLabelIndex, 'Após adição de nova linha Z', {
+  lineIndexes: [updatedMatrix.length - 1],
+  lineBgHighlight: "yellow"
+});
 
 // first phase
 let resultMatrix = updatedMatrix;
+let scalingCount = 0;
 
 while (hasArtificialLine(resultMatrix, columnLabelIndex)) {
   let { pivotColumnIndex, pivotLineIndex } = getPivotsIndexes({
@@ -28,6 +34,11 @@ while (hasArtificialLine(resultMatrix, columnLabelIndex)) {
     independentTermsColumnIndex
   });
 
+  renderTable(resultMatrix, lineLabelIndex, columnLabelIndex, 'Linha/Coluna Pivô escolhidas', {
+    lineIndexes: [pivotLineIndex],
+    columnIndexes: [pivotColumnIndex],
+  });
+
   resultMatrix = scaleMatrix({
     matrix: resultMatrix,
     columnLabelIndex,
@@ -36,10 +47,27 @@ while (hasArtificialLine(resultMatrix, columnLabelIndex)) {
     pivotColumnIndex,
     pivotLineIndex
   });
+
+  renderTable(resultMatrix, lineLabelIndex, columnLabelIndex, 'Após escalonamento', {
+    lineIndexes: [pivotLineIndex],
+    columnBgHighlight: "green",
+    columnIndexes: [pivotColumnIndex],
+    lineBgHighlight: "green"
+  });
 }
+
+renderTable(resultMatrix, lineLabelIndex, columnLabelIndex, `Linhas/Colunas a serem removidas (após 1ª fase)`, {
+  lineIndexes: [resultMatrix.length - 1],
+  columnBgHighlight: "red",
+  columnIndexes: artificialVariablesIndexes,
+  lineBgHighlight: "red"
+});
 
 resultMatrix = removeTwoPhasesLinesAndColumns(resultMatrix, columnLabelIndex, artificialVariablesIndexes);
 
+renderTable(resultMatrix, lineLabelIndex, columnLabelIndex, `Resultado da remoção`);
+
+scalingCount = 0;
 // second phase
 while (hasNegativeTermInZLine(resultMatrix, zLineIndex, columnLabelIndex, independentTermsColumnIndex)) {
   let { pivotColumnIndex, pivotLineIndex } = getPivotsIndexes({
@@ -50,6 +78,11 @@ while (hasNegativeTermInZLine(resultMatrix, zLineIndex, columnLabelIndex, indepe
     independentTermsColumnIndex
   });
 
+  renderTable(resultMatrix, lineLabelIndex, columnLabelIndex, 'Linha/Coluna Pivô escolhidas', {
+    lineIndexes: [pivotLineIndex],
+    columnIndexes: [pivotColumnIndex],
+  });
+
   resultMatrix = scaleMatrix({
     matrix: resultMatrix,
     columnLabelIndex,
@@ -58,9 +91,14 @@ while (hasNegativeTermInZLine(resultMatrix, zLineIndex, columnLabelIndex, indepe
     pivotColumnIndex,
     pivotLineIndex
   });
-}
 
-console.table(resultMatrix);
+  renderTable(resultMatrix, lineLabelIndex, columnLabelIndex, 'Após escalonamento', {
+    lineIndexes: [pivotLineIndex],
+    columnBgHighlight: "green",
+    columnIndexes: [pivotColumnIndex],
+    lineBgHighlight: "green"
+  });
+}
 
 function getMatrixWithNewZLine({ matrix, zLineIndex, artificialVariablesIndexes, lineLabelIndex, columnLabelIndex }) {
   const matrixCopy = copyObject(matrix);
