@@ -1,7 +1,7 @@
 import data from './data.json' with { type: 'json' };
 
 import { createArray, copyObject } from "./utils.js";
-import { buildInitialMatrix } from './matrixUtils.js';
+import { buildInitialMatrix, getPivotsIndexes, scaleMatrix } from './matrixUtils.js';
 
 const {
   matrix,
@@ -16,19 +16,37 @@ const {
 
 const updatedMatrix = getMatrixWithNewZLine({ matrix, zLineIndex, artificialVariablesIndexes, lineLabelIndex, columnLabelIndex });
 
-console.table(updatedMatrix);
+// first phase
+let resultMatrix = updatedMatrix;
+
+while (hasArtificialLine(resultMatrix, columnLabelIndex)) {
+  let { pivotColumnIndex, pivotLineIndex } = getPivotsIndexes({
+    matrix: resultMatrix,
+    columnLabelIndex,
+    lineLabelIndex,
+    zLineIndex: resultMatrix.length - 1,
+    independentTermsColumnIndex
+  });
+
+  resultMatrix = scaleMatrix({
+    matrix: resultMatrix,
+    columnLabelIndex,
+    independentTermsColumnIndex,
+    lineLabelIndex,
+    pivotColumnIndex,
+    pivotLineIndex
+  });
+}
 
 function getMatrixWithNewZLine({ matrix, zLineIndex, artificialVariablesIndexes, lineLabelIndex, columnLabelIndex }) {
   const matrixCopy = copyObject(matrix);
 
   const newZLine = createArray(matrix[zLineIndex].length);
 
-  newZLine[columnLabelIndex] = "Z'";
+  newZLine[columnLabelIndex] = "z'";
 
   matrix.forEach((matrixLine, index) => {
-    let isArtificalLine = matrixLine[columnLabelIndex].startsWith('a');
-
-    if (index === lineLabelIndex || index === zLineIndex || !isArtificalLine) return;
+    if (index === lineLabelIndex || index === zLineIndex || !isArtificialLine(matrixLine, columnLabelIndex)) return;
 
     matrixLine.forEach((matrixLineItem, lineItemIndex) => {
       let isArtificialVariable = artificialVariablesIndexes.includes(lineItemIndex);
@@ -42,4 +60,12 @@ function getMatrixWithNewZLine({ matrix, zLineIndex, artificialVariablesIndexes,
   matrixCopy.push(newZLine);
 
   return matrixCopy;
+}
+
+function hasArtificialLine(matrix, columnLabelIndex) {
+  return matrix.some(line => isArtificialLine(line, columnLabelIndex));
+}
+
+function isArtificialLine(line, columnLabelIndex) {
+  return line[columnLabelIndex].startsWith('a');
 }
