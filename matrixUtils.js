@@ -1,4 +1,4 @@
-import { createArray, createOrderedArray } from "./utils.js";
+import { copyObject, createArray, createOrderedArray, fixNumber } from "./utils.js";
 
 function buildInitialMatrix(data) {
   const { inputConsumption, availability, lucrativity, preorders } = data;
@@ -110,4 +110,87 @@ function setHeader(matrix, headerLine) {
   matrix.unshift(headerLine);
 }
 
-export { buildInitialMatrix };
+function getPivotsIndexes({ matrix, lineLabelIndex, columnLabelIndex, zLineIndex, independentTermsColumnIndex }) {
+  const matrixCopy = copyObject(matrix);
+
+  const pivotColumnIndex = getPivotColumnIndex(matrixCopy[zLineIndex], columnLabelIndex, independentTermsColumnIndex);
+  const pivotLineIndex = getPivotLineIndex(matrixCopy, lineLabelIndex, independentTermsColumnIndex, pivotColumnIndex, columnLabelIndex);
+
+  return {
+    pivotColumnIndex,
+    pivotLineIndex
+  };
+}
+
+function getPivotColumnIndex(zLine, columnLabelIndex, independentTermsColumnIndex) {
+  return zLine.reduce((negativeTermIndex, currentTerm, index) => {
+    if (index === columnLabelIndex || index === independentTermsColumnIndex || currentTerm >= 0) {
+      return negativeTermIndex;
+    }
+
+    return (!negativeTermIndex || currentTerm < zLine[negativeTermIndex]) ? index : negativeTermIndex;
+  }, null);
+}
+
+function getPivotLineIndex(matrix, lineLabelIndex, independentTermsColumnIndex, pivotColumnIndex, columnLabelIndex) {
+  let lowerProductionFactor;
+
+  return matrix.reduce((pivotLineIndex, line, index) => {
+    if (index === lineLabelIndex || isZLine(line, columnLabelIndex)) {
+      return pivotLineIndex;
+    }
+
+    let lineIndependentTerm = line[independentTermsColumnIndex];
+
+    if (lineIndependentTerm < 0) {
+      return pivotLineIndex;
+    }
+
+    let productionFactor = lineIndependentTerm / line[pivotColumnIndex];
+
+    if (productionFactor >= lowerProductionFactor) {
+      return pivotLineIndex;
+    }
+
+    lowerProductionFactor = productionFactor;
+    return index;
+  }, null);
+}
+
+function scaleMatrix({ matrix, pivotColumnIndex, pivotLineIndex, lineLabelIndex, columnLabelIndex, independentTermsColumnIndex }) {
+  let matrixCopy = copyObject(matrix);
+
+  matrixCopy[pivotLineIndex] = matrixCopy[pivotLineIndex].map((lineItem, index, line) => {
+    if (index === columnLabelIndex) {
+      return lineItem;
+    }
+
+    return lineItem / line[pivotColumnIndex];
+  });
+
+  matrixCopy = matrixCopy.map((line, lineIndex) => {
+    if (lineIndex === lineLabelIndex || lineIndex === pivotLineIndex) {
+      return line;
+    }
+
+    let oldLinePivotValue = line[pivotColumnIndex];
+
+    return line.map((lineItem, columnIndex) => {
+      if (columnIndex === columnLabelIndex) {
+        return lineItem;
+      }
+
+      return fixNumber(lineItem - (oldLinePivotValue * matrixCopy[pivotLineIndex][columnIndex]));
+    });
+  });
+
+  matrixCopy[pivotLineIndex][columnLabelIndex] = matrixCopy[lineLabelIndex][pivotColumnIndex];
+
+  return matrixCopy;
+}
+
+function isZLine(line, columnLabelIndex) {
+  return line[columnLabelIndex].toLowerCase().startsWith('z');
+}
+
+export { buildInitialMatrix, getPivotsIndexes, scaleMatrix };
