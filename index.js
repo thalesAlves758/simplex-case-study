@@ -38,6 +38,30 @@ while (hasArtificialLine(resultMatrix, columnLabelIndex)) {
   });
 }
 
+resultMatrix = removeTwoPhasesLinesAndColumns(resultMatrix, columnLabelIndex, artificialVariablesIndexes);
+
+// second phase
+while (hasNegativeTermInZLine(resultMatrix, zLineIndex, columnLabelIndex, independentTermsColumnIndex)) {
+  let { pivotColumnIndex, pivotLineIndex } = getPivotsIndexes({
+    matrix: resultMatrix,
+    columnLabelIndex,
+    lineLabelIndex,
+    zLineIndex,
+    independentTermsColumnIndex
+  });
+
+  resultMatrix = scaleMatrix({
+    matrix: resultMatrix,
+    columnLabelIndex,
+    independentTermsColumnIndex,
+    lineLabelIndex,
+    pivotColumnIndex,
+    pivotLineIndex
+  });
+}
+
+console.table(resultMatrix);
+
 function getMatrixWithNewZLine({ matrix, zLineIndex, artificialVariablesIndexes, lineLabelIndex, columnLabelIndex }) {
   const matrixCopy = copyObject(matrix);
 
@@ -68,4 +92,20 @@ function hasArtificialLine(matrix, columnLabelIndex) {
 
 function isArtificialLine(line, columnLabelIndex) {
   return line[columnLabelIndex].startsWith('a');
+}
+
+function removeTwoPhasesLinesAndColumns(matrix, columnLabelIndex, artificialVariablesIndexes) {
+  let matrixCopy = copyObject(matrix);
+
+  matrixCopy = matrixCopy.filter(line => line[columnLabelIndex] !== "z'");
+
+  return matrixCopy.map(line =>
+    line.filter((_, columnIndex) => !artificialVariablesIndexes.includes(columnIndex))
+  );
+}
+
+function hasNegativeTermInZLine(matrix, zLineIndex, columnLabelIndex, independentTermsColumnIndex) {
+  return matrix[zLineIndex].some((lineItem, columnIndex) =>
+    columnIndex !== columnLabelIndex && columnIndex !== independentTermsColumnIndex && lineItem < 0
+  );
 }
