@@ -135,6 +135,8 @@ if (notFoundAvailableSolution) {
   throw 'Não foi encontrada uma solução viável';
 }
 
+renderTable(resultMatrix, lineLabelIndex, columnLabelIndex, 'Tabela final');
+
 function getMatrixWithNewZLine({ matrix, zLineIndex, artificialVariablesIndexes, lineLabelIndex, columnLabelIndex }) {
   const matrixCopy = copyObject(matrix);
 
