@@ -10,10 +10,6 @@ function copyObject(object) {
   return JSON.parse(JSON.stringify(object));
 }
 
-function fixNumber(number) {
-  return Number(number.toFixed(2));
-}
-
 function renderTable(matrix, headerIndex, columnLabelIndex, tableTitle, { lineIndexes = [], columnIndexes = [], lineBgHighlight = "blue", columnBgHighlight = "blue" } = {}) {
   let tableEl = ``;
 
@@ -31,7 +27,7 @@ function renderTable(matrix, headerIndex, columnLabelIndex, tableTitle, { lineIn
 
     tableEl += `
       <tr>
-        ${line.map((label, columnIndex) => (`<td class="${columnIndex === columnLabelIndex ? 'bold' : ''} ${lineHighlightClassName} ${isHighlightColumn(columnIndexes, columnIndex) ? columnBgHighlight : ''}">${label}</td>`)).join('')}
+        ${line.map((value, columnIndex) => (`<td class="${columnIndex === columnLabelIndex ? 'bold' : ''} ${lineHighlightClassName} ${isHighlightColumn(columnIndexes, columnIndex) ? columnBgHighlight : ''}">${columnIndex === columnLabelIndex ? value : fixNumber(value)}</td>`)).join('')}
       </tr>
     `;
   });
@@ -43,6 +39,10 @@ function renderTable(matrix, headerIndex, columnLabelIndex, tableTitle, { lineIn
     </table>
     <hr>
   `;
+}
+
+function fixNumber(number) {
+  return Number(number.toFixed(2));
 }
 
 function isHighlightColumn(hightlightColumnsIndexes, columnIndex) {
