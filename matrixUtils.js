@@ -166,6 +166,10 @@ function getPivotLineIndex(matrix, lineLabelIndex, independentTermsColumnIndex, 
 
     let productionFactor = lineIndependentTerm / line[pivotColumnIndex];
 
+    if(productionFactor < 0) {
+      return pivotLineIndex;
+    }
+
     if (productionFactor >= lowerProductionFactor) {
       return pivotLineIndex;
     }
@@ -201,7 +205,7 @@ function scaleMatrix({ matrix, pivotColumnIndex, pivotLineIndex, lineLabelIndex,
         return lineItem;
       }
 
-      return fixNumber(lineItem - (oldLinePivotValue * matrixCopy[pivotLineIndex][columnIndex]));
+      return lineItem - (oldLinePivotValue * matrixCopy[pivotLineIndex][columnIndex]);
     });
   });
 
