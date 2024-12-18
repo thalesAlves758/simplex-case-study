@@ -1,11 +1,14 @@
 import { copyObject, createArray, createOrderedArray, fixNumber } from "./utils.js";
 
+// Função para construir tabela inicial
 function buildInitialMatrix(data) {
   const { inputConsumption, availability, lucrativity, preorders } = data;
 
+  // Obtém as chaves das restrições em formato de array
   const inputConsumptionKeys = Object.keys(inputConsumption);
   const preordersKeys = Object.keys(preorders);
 
+  // Inicializa variáveis de rótulos
   const baseLabel = ['base'];
   const variablesLabels = Object.keys(lucrativity);
   const artificialVariablesLabels = createArray(preordersKeys.length);
@@ -13,6 +16,7 @@ function buildInitialMatrix(data) {
   const variablesCount = variablesLabels.length;
   const independentTermsLabel = ['b'];
 
+  // Inicializa variáveis que guardam as linhas
   const coefficientsLines = [];
   const slackVariablesLines = [];
   const artificialVariablesLines = [];
@@ -20,62 +24,78 @@ function buildInitialMatrix(data) {
   const basicVariablesLines = [];
   const zLine = [];
 
+  // Atribui à variável zLine a função objetivo já igualada a zero
   variablesLabels.forEach(lucrativityKey => {
     zLine.push(-lucrativity[lucrativityKey]);
   });
 
   inputConsumptionKeys.forEach((consumptionKey, index) => {
+    // cria um array com zeros do tamanho da quantidade de coeficientes (x1, x2, x...)
     let coefficientsline = createArray(variablesCount);
 
+    // Para cada coeficiente no consumo da iteração atual, atribui à sua posição o seu respectivo consumo
     Object.keys(inputConsumption[consumptionKey]).forEach(variableConsumptionKey => {
       let lineVariableIndex = variablesLabels.indexOf(variableConsumptionKey);
 
       coefficientsline[lineVariableIndex] = inputConsumption[consumptionKey][variableConsumptionKey];
     });
 
+    // cria linha de váriáveis de folga, atribuindo por padrão o valor 1 à respectiva posição
     let slackVariablesLine = createArray(slackVariablesLabels.length);
     slackVariablesLine[index] = 1;
     slackVariablesLabels[index] = `f${index + 1}`;
     basicVariablesLines.push([slackVariablesLabels[index]]);
 
+    // adiciona 0 da variável de folga à linha da função objetivo
     zLine.push(0);
 
+    // popula as listas de linhas de coeficientes, variáveis de folga, variáveis artificiais
+    // (com uma lista zerada no momento, apenas para respeitar o tamanho)
+    // e termo independente
     coefficientsLines.push(coefficientsline);
     slackVariablesLines.push(slackVariablesLine);
     artificialVariablesLines.push(createArray(artificialVariablesLabels.length));
     independentTerms.push([availability[consumptionKey]]);
   });
 
+  // para cada restrição de encomenda prévia
   preordersKeys.forEach((preorderKey, index) => {
+    // cria linha para as colunas dos coeficientes
     let coefficientsline = createArray(variablesCount);
     let coefficientsLineIndex = variablesLabels.indexOf(preorderKey);
     coefficientsline[coefficientsLineIndex] = 1;
 
+    // cria linha para colunas de variáveis de folga e adiciona 0 à linha do Z
     let slackVariablesLine = createArray(slackVariablesLabels.length);
     slackVariablesLine[inputConsumptionKeys.length + index] = -1;
     slackVariablesLabels[inputConsumptionKeys.length + index] = `f${inputConsumptionKeys.length + index + 1}`;
     zLine.push(0);
 
+    // cria linha para as colunas de variáveis artificiais e adiciona 0 à linha do Z
     let artificialVariablesLine = createArray(artificialVariablesLabels.length);
     artificialVariablesLine[index] = 1;
     artificialVariablesLabels[index] = `a${index + 1}`;
     basicVariablesLines.push([artificialVariablesLabels[index]]);
     zLine.push(0);
 
+    // popula as respectivas linhas
     coefficientsLines.push(coefficientsline);
     slackVariablesLines.push(slackVariablesLine);
     artificialVariablesLines.push(artificialVariablesLine);
     independentTerms.push([preorders[preorderKey]]);
   });
 
+  // adiciona o 0 da coluna do termo independente
   zLine.push(0);
 
+  // seta o header da tabela
   setHeader(coefficientsLines, variablesLabels);
   setHeader(slackVariablesLines, slackVariablesLabels);
   setHeader(artificialVariablesLines, artificialVariablesLabels);
   setHeader(independentTerms, independentTermsLabel);
   setHeader(basicVariablesLines, baseLabel);
 
+  // junta as matrizes, formando apenas uma e nessa adiciona a linha do z
   const finalMatrix = joinMatrixes(basicVariablesLines, coefficientsLines, slackVariablesLines, artificialVariablesLines, independentTerms);
   finalMatrix.push(['z', ...zLine]);
 
@@ -122,6 +142,7 @@ function getPivotsIndexes({ matrix, lineLabelIndex, columnLabelIndex, zLineIndex
   };
 }
 
+// obtém o índice da coluna pivô, iterando pela linha do Z para encontrar o menor valor negativo
 function getPivotColumnIndex(zLine, columnLabelIndex, independentTermsColumnIndex) {
   return zLine.reduce((negativeTermIndex, currentTerm, index) => {
     if (index === columnLabelIndex || index === independentTermsColumnIndex || currentTerm >= 0) {
@@ -132,6 +153,7 @@ function getPivotColumnIndex(zLine, columnLabelIndex, independentTermsColumnInde
   }, null);
 }
 
+// obtém o íncide ca linha pivô, iterando pelas linhas para obter o menor fator de produção
 function getPivotLineIndex(matrix, lineLabelIndex, independentTermsColumnIndex, pivotColumnIndex, columnLabelIndex) {
   let lowerProductionFactor;
 
@@ -160,6 +182,7 @@ function getPivotLineIndex(matrix, lineLabelIndex, independentTermsColumnIndex, 
 function scaleMatrix({ matrix, pivotColumnIndex, pivotLineIndex, lineLabelIndex, columnLabelIndex, independentTermsColumnIndex }) {
   let matrixCopy = copyObject(matrix);
 
+  // atribui à linha pivô os elementos divididos pelo número pivô
   matrixCopy[pivotLineIndex] = matrixCopy[pivotLineIndex].map((lineItem, index, line) => {
     if (index === columnLabelIndex) {
       return lineItem;
@@ -168,6 +191,8 @@ function scaleMatrix({ matrix, pivotColumnIndex, pivotLineIndex, lineLabelIndex,
     return lineItem / line[pivotColumnIndex];
   });
 
+  // realiza as operações de soma de múltiplos nas linhas pela linha pivô
+  // e retorna a matriz escalonada
   matrixCopy = matrixCopy.map((line, lineIndex) => {
     if (lineIndex === lineLabelIndex || lineIndex === pivotLineIndex) {
       return line;

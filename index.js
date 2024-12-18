@@ -3,6 +3,7 @@ import data from './data.json' with { type: 'json' };
 import { createArray, copyObject, renderTable } from "./utils.js";
 import { buildInitialMatrix, getPivotsIndexes, scaleMatrix } from './matrixUtils.js';
 
+// utiliza função de construir matriz inicial
 const {
   matrix,
   artificialVariablesIndexes,
@@ -14,6 +15,7 @@ const {
 
 renderTable(matrix, lineLabelIndex, columnLabelIndex, 'Quadro inicial');
 
+// adiciona a linha do z'
 const updatedMatrix = getMatrixWithNewZLine({ matrix, zLineIndex, artificialVariablesIndexes, lineLabelIndex, columnLabelIndex });
 
 renderTable(updatedMatrix, lineLabelIndex, columnLabelIndex, 'Após adição de nova linha Z', {
@@ -25,7 +27,9 @@ renderTable(updatedMatrix, lineLabelIndex, columnLabelIndex, 'Após adição de 
 let resultMatrix = updatedMatrix;
 let scalingCount = 0;
 
+// enquanto houver linhas artificiais
 while (hasArtificialLine(resultMatrix, columnLabelIndex)) {
+  // obtém os indices da linha e da coluna pivô
   let { pivotColumnIndex, pivotLineIndex } = getPivotsIndexes({
     matrix: resultMatrix,
     columnLabelIndex,
@@ -39,6 +43,7 @@ while (hasArtificialLine(resultMatrix, columnLabelIndex)) {
     columnIndexes: [pivotColumnIndex],
   });
 
+  // escalona matriz passando os indices recebidos
   resultMatrix = scaleMatrix({
     matrix: resultMatrix,
     columnLabelIndex,
@@ -70,6 +75,7 @@ renderTable(resultMatrix, lineLabelIndex, columnLabelIndex, `Resultado da remoç
 scalingCount = 0;
 // second phase
 while (hasNegativeTermInZLine(resultMatrix, zLineIndex, columnLabelIndex, independentTermsColumnIndex)) {
+  // obtém os indices da linha e da coluna pivô
   let { pivotColumnIndex, pivotLineIndex } = getPivotsIndexes({
     matrix: resultMatrix,
     columnLabelIndex,
@@ -83,6 +89,7 @@ while (hasNegativeTermInZLine(resultMatrix, zLineIndex, columnLabelIndex, indepe
     columnIndexes: [pivotColumnIndex],
   });
 
+  // escalona matriz passando os indices recebidos
   resultMatrix = scaleMatrix({
     matrix: resultMatrix,
     columnLabelIndex,
