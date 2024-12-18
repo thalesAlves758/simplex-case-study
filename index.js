@@ -26,7 +26,9 @@ function getMatrixWithNewZLine({ matrix, zLineIndex, artificialVariablesIndexes,
   newZLine[columnLabelIndex] = "Z'";
 
   matrix.forEach((matrixLine, index) => {
-    if (index === lineLabelIndex || index === zLineIndex) return;
+    let isArtificalLine = matrixLine[columnLabelIndex].startsWith('a');
+
+    if (index === lineLabelIndex || index === zLineIndex || !isArtificalLine) return;
 
     matrixLine.forEach((matrixLineItem, lineItemIndex) => {
       let isArtificialVariable = artificialVariablesIndexes.includes(lineItemIndex);
