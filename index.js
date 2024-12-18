@@ -24,6 +24,7 @@ renderTable(updatedMatrix, lineLabelIndex, columnLabelIndex, 'Após adição de 
 });
 
 // first phase
+let notFoundAvailableSolution = false;
 let resultMatrix = updatedMatrix;
 let scalingCount = 0;
 
@@ -37,6 +38,11 @@ while (hasArtificialLine(resultMatrix, columnLabelIndex)) {
     zLineIndex: resultMatrix.length - 1,
     independentTermsColumnIndex
   });
+
+  if (pivotColumnIndex === null || pivotLineIndex === null) {
+    notFoundAvailableSolution = true;
+    break;
+  }
 
   renderTable(resultMatrix, lineLabelIndex, columnLabelIndex, 'Linha/Coluna Pivô escolhidas', {
     lineIndexes: [pivotLineIndex],
@@ -59,6 +65,14 @@ while (hasArtificialLine(resultMatrix, columnLabelIndex)) {
     columnIndexes: [pivotColumnIndex],
     lineBgHighlight: "green"
   });
+}
+
+if (notFoundAvailableSolution) {
+  renderTable(resultMatrix, lineLabelIndex, columnLabelIndex, 'Não foi encontrada uma solução viável', {
+    lineIndexes: [pivotLineIndex],
+    columnIndexes: [pivotColumnIndex],
+  });
+  throw 'Não foi encontrada uma solução viável';
 }
 
 renderTable(resultMatrix, lineLabelIndex, columnLabelIndex, `Linhas/Colunas a serem removidas (após 1ª fase)`, {
@@ -84,6 +98,11 @@ while (hasNegativeTermInZLine(resultMatrix, zLineIndex, columnLabelIndex, indepe
     independentTermsColumnIndex
   });
 
+  if (pivotColumnIndex === null || pivotLineIndex === null) {
+    notFoundAvailableSolution = true;
+    break;
+  }
+
   renderTable(resultMatrix, lineLabelIndex, columnLabelIndex, 'Linha/Coluna Pivô escolhidas', {
     lineIndexes: [pivotLineIndex],
     columnIndexes: [pivotColumnIndex],
@@ -105,6 +124,15 @@ while (hasNegativeTermInZLine(resultMatrix, zLineIndex, columnLabelIndex, indepe
     columnIndexes: [pivotColumnIndex],
     lineBgHighlight: "green"
   });
+}
+
+if (notFoundAvailableSolution) {
+  renderTable(resultMatrix, lineLabelIndex, columnLabelIndex, 'Não foi encontrada uma solução viável', {
+    lineIndexes: [pivotLineIndex],
+    columnIndexes: [pivotColumnIndex],
+  });
+
+  throw 'Não foi encontrada uma solução viável';
 }
 
 function getMatrixWithNewZLine({ matrix, zLineIndex, artificialVariablesIndexes, lineLabelIndex, columnLabelIndex }) {

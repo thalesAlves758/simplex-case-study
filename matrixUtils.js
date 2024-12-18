@@ -164,10 +164,6 @@ function getPivotLineIndex(matrix, lineLabelIndex, independentTermsColumnIndex, 
 
     let lineIndependentTerm = line[independentTermsColumnIndex];
 
-    if (lineIndependentTerm < 0) {
-      return pivotLineIndex;
-    }
-
     let productionFactor = lineIndependentTerm / line[pivotColumnIndex];
 
     if (productionFactor >= lowerProductionFactor) {
