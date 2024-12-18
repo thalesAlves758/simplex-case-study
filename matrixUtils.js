@@ -136,7 +136,7 @@ function getPivotLineIndex(matrix, lineLabelIndex, independentTermsColumnIndex, 
   let lowerProductionFactor;
 
   return matrix.reduce((pivotLineIndex, line, index) => {
-    if (index === lineLabelIndex || isZLine(line, columnLabelIndex)) {
+    if (index === lineLabelIndex || isZLine(line, columnLabelIndex) || line[pivotColumnIndex] <= 0) {
       return pivotLineIndex;
     }
 
