@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apresentação - PL</title>
+
+  <link rel="stylesheet" href="reset.css">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      padding: .75rem 0 2.8rem;
+    }
+
+    table {
+      border: 1px solid black;
+      border-collapse: collapse;
+      border-spacing: 10px;
+    }
+
+    table caption {
+      font-size: 1.8rem;
+      margin: .75rem 0;
+      text-align: start;
+    }
+
+    tr {
+      display: table-row;
+      border: 1px solid black;
+    }
+
+    td, th {
+      display: table-cell;
+      border: 1px solid black;
+      padding: .25rem;
+      text-align: center;
+    }
+
+    :is(td, th).bold {
+      font-weight: 700;
+    }
+
+    :is(td, th).blue {
+      background-color: #4895fa;
+    }
+
+    :is(td, th).green {
+      background-color: #11f088;
+    }
+
+    :is(td, th).yellow {
+      background-color: #fbff19;
+    }
+
+    :is(td, th).red {
+      background-color: #ff6b6b;
+    }
+
+    hr {
+      height: 1px;
+      background-color: #cfcfcf;
+      width: 98%;
+      margin-top: 2rem;
+      border-width: 0;
+    }
+
+    hr:last-of-type {
+      display: none;
+    }
+  </style>
+  <script defer src="index.js" type="module"></script>
+</head>
+<body>
+</body>
+</html>
