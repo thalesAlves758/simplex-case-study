@@ -26,7 +26,6 @@ renderTable(updatedMatrix, lineLabelIndex, columnLabelIndex, 'Após adição de 
 // first phase
 let notFoundAvailableSolution = false;
 let resultMatrix = updatedMatrix;
-let scalingCount = 0;
 
 // enquanto houver linhas artificiais
 while (hasArtificialLine(resultMatrix, columnLabelIndex)) {
@@ -86,7 +85,8 @@ resultMatrix = removeTwoPhasesLinesAndColumns(resultMatrix, columnLabelIndex, ar
 
 renderTable(resultMatrix, lineLabelIndex, columnLabelIndex, `Resultado da remoção`);
 
-scalingCount = 0;
+let currentIndependentTermColumnIndex = resultMatrix[lineLabelIndex].indexOf('b');
+
 // second phase
 while (hasNegativeTermInZLine(resultMatrix, zLineIndex, columnLabelIndex, independentTermsColumnIndex)) {
   // obtém os indices da linha e da coluna pivô
@@ -95,7 +95,7 @@ while (hasNegativeTermInZLine(resultMatrix, zLineIndex, columnLabelIndex, indepe
     columnLabelIndex,
     lineLabelIndex,
     zLineIndex,
-    independentTermsColumnIndex
+    independentTermsColumnIndex: currentIndependentTermColumnIndex  
   });
 
   if (pivotColumnIndex === null || pivotLineIndex === null) {
@@ -112,10 +112,10 @@ while (hasNegativeTermInZLine(resultMatrix, zLineIndex, columnLabelIndex, indepe
   resultMatrix = scaleMatrix({
     matrix: resultMatrix,
     columnLabelIndex,
-    independentTermsColumnIndex,
+    independentTermsColumnIndex: currentIndependentTermColumnIndex,
     lineLabelIndex,
     pivotColumnIndex,
-    pivotLineIndex
+    pivotLineIndex,
   });
 
   renderTable(resultMatrix, lineLabelIndex, columnLabelIndex, 'Após escalonamento', {
